@@ -1,5 +1,5 @@
 export const cn = (
-  ...args: (string | string[] | { [key: string]: boolean })[]
+  ...args: (string | string[] | { [key: string]: boolean | undefined })[]
 ): string => {
   const classes: string[] = [];
 

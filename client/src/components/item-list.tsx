@@ -1,6 +1,6 @@
 import React from "react";
 import items from "../items";
-import { cn } from "../utils";
+import Item from "./item";
 
 interface DraftState {
   currentPhaseIndex: number;
@@ -31,7 +31,6 @@ const ItemList: React.FC<ItemListProps> = ({ roomState, onItemClick }) => {
 
   return (
     <div className="item-list">
-      <h3>Available Items</h3>
       <ul>
         {items.map((item) => {
           const isBanned = banned.includes(item.name);
@@ -45,22 +44,19 @@ const ItemList: React.FC<ItemListProps> = ({ roomState, onItemClick }) => {
           };
 
           return (
-            <li
+            <Item
               key={`item-${item.name}`}
-              className={cn("item", {
-                "item--banned": isBanned,
-                "item--picked": isPicked,
-              })}
+              {...item}
+              isBanned={isBanned}
+              pickedPlayer={
+                pickedP1.includes(item.name)
+                  ? "player1"
+                  : pickedP2.includes(item.name)
+                  ? "player2"
+                  : undefined
+              }
               onClick={handleClick}
-              style={{
-                cursor: isBanned || isPicked ? "not-allowed" : "pointer",
-              }}
-            >
-              <img src={item.sprite} alt={item.name} className="item-icon" />
-              {isBanned && <span>(Banned)</span>}
-              {pickedP1.includes(item.name) && <span>(Picked by Player1)</span>}
-              {pickedP2.includes(item.name) && <span>(Picked by Player2)</span>}
-            </li>
+            />
           );
         })}
       </ul>

@@ -58,6 +58,12 @@ main {
   margin: 0 auto;
 }
 
+.draft-room {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+}
+
 .action-form,
 .item-list {
   margin-top: 2em;
@@ -114,7 +120,6 @@ select {
 
 .item {
   position: relative;
-  margin: 0.5em;
   width: var(--item-icon-size);
   height: var(--item-icon-size);
 }
