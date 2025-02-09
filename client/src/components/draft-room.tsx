@@ -1,52 +1,47 @@
-// /client/src/components/draft-room.tsx
 import React, { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import ItemList from "./item-list";
 
-// Replace with your actual Heroku server URL.
+// Use your local server URL for development.
 const SOCKET_SERVER_URL = "http://localhost:3000";
 
 const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
   const [myPlayer, setMyPlayer] = useState<PlayerDetails | null>(null);
-  const [action, setAction] = useState<string>("");
   const [actionType, setActionType] = useState<"ban" | "pick">("ban");
 
   useEffect(() => {
-    // Initialize the Socket.IO client.
     const newSocket: Socket = io(SOCKET_SERVER_URL);
     setSocket(newSocket);
 
-    // Tell the server to join the specified room.
-    newSocket.emit("joinRoom", roomId, { username: "User" }); // Replace with real user data.
+    // Emit joinRoom only after the connection is established.
+    newSocket.on("connect", () => {
+      console.log("Connected, socket id:", newSocket.id);
+      newSocket.emit("joinRoom", roomId, { username: "User" });
+    });
 
-    // Listen for detailed room state updates.
     newSocket.on("roomUpdate", (updatedRoom: RoomDetails) => {
       setRoomDetails(updatedRoom);
-      // Determine my identity by comparing my socket id to the room's players.
+      // Determine your own player details using the socket id.
       const me = updatedRoom.players.find(
         (player) => player.socketId === newSocket.id
       );
       setMyPlayer(me || null);
     });
 
-    // Clean up when component unmounts.
     return () => {
       newSocket.disconnect();
     };
   }, [roomId]);
 
-  const handleActionSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (socket && action.trim() !== "") {
-      // Emit a draft action with roomId, action type, and the ability.
+  const handleItemClick = (itemName: string) => {
+    if (socket) {
       socket.emit("draftAction", {
         roomId,
         action: actionType,
-        ability: action.trim(),
+        ability: itemName,
       });
-      setAction("");
     }
   };
 
@@ -104,32 +99,23 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
         <p>Loading room details...</p>
       )}
 
-      <div className="action-form">
-        <h3>Submit an Action</h3>
-        <form onSubmit={handleActionSubmit}>
-          <select
-            value={actionType}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setActionType(e.target.value as "ban" | "pick")
-            }
-          >
-            <option value="ban">Ban</option>
-            <option value="pick">Pick</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Enter ability"
-            value={action}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setAction(e.target.value)
-            }
-          />
-          <button type="submit">Submit Action</button>
-        </form>
+      <div className="action-controls">
+        <h3>Select Action Type</h3>
+        <select
+          value={actionType}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setActionType(e.target.value as "ban" | "pick")
+          }
+        >
+          <option value="ban">Ban</option>
+          <option value="pick">Pick</option>
+        </select>
       </div>
 
+      {/* Render the ItemList with the onItemClick callback */}
       <ItemList
         roomState={roomDetails ? { draftState: roomDetails.draftState } : null}
+        onItemClick={handleItemClick}
       />
     </div>
   );
