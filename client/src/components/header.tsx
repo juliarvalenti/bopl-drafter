@@ -2,7 +2,7 @@ import React from "react";
 
 const Header: React.FC = () => (
   <header>
-    <h1>Drafting System</h1>
+    <h1>Bopl Draft</h1>
   </header>
 );
 

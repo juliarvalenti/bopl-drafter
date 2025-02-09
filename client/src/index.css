@@ -1,7 +1,38 @@
+@font-face {
+  font-family: "SF Arch Rival";
+  src: url("/SF Arch Rival.ttf") format("truetype");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "SF Arch Rival";
+  src: url("/SF Arch Rival Bold.ttf") format("truetype");
+  font-weight: bold;
+}
+
+@font-face {
+  font-family: "SF Arch Rival";
+  src: url("/SF Arch Rival Italic.ttf") format("truetype");
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "SF Arch Rival";
+  src: url("/SF Arch Rival Bold Italic.ttf") format("truetype");
+  font-weight: bold;
+  font-style: italic;
+}
+
+:root {
+  --font-arch-rival: "SF Arch Rival", sans-serif;
+  font-size: 22px;
+}
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: var(--font-arch-rival) !important;
   margin: 0;
   padding: 0;
+  background: var(--bg);
 }
 
 .app-container {
@@ -12,8 +43,6 @@ body {
 
 header,
 footer {
-  background: #333;
-  color: #fff;
   padding: 1em;
   text-align: center;
 }
@@ -30,12 +59,83 @@ main {
 }
 
 .action-form,
-.ability-list {
+.item-list {
   margin-top: 2em;
+}
+
+.item-list ul {
+  list-style-type: none;
+  padding: 0;
+  background-color: var(--bg);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  max-width: 12rem;
+  border: 4px solid var(--border);
+  border-radius: 1em;
 }
 
 input,
 select {
   padding: 0.5em;
   margin-right: 0.5em;
+}
+
+:root {
+  --item-icon-size: 64px;
+  --icon-circle-size: calc(var(--item-icon-size) - 24px);
+
+  --bg: hsl(205, 86%, 53%);
+  --border: hsl(205, 72%, 30%);
+  --border-light: hsl(205, 72%, 31%);
+  --border-highlight: hsl(187, 100%, 60%);
+}
+
+.item-icon {
+  width: var(--item-icon-size);
+  height: var(--item-icon-size);
+  margin-right: 0.5em;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.item:hover {
+  transform: scale(1.25);
+  transition: transform 0.3s;
+  cursor: pointer;
+}
+
+.item:hover::before {
+  box-shadow: 4px 4px 10px 0 rgba(0, 0, 0, 0.5);
+  outline: 4px solid var(--border-highlight);
+  outline-offset: 2px;
+}
+
+.item {
+  position: relative;
+  margin: 0.5em;
+  width: var(--item-icon-size);
+  height: var(--item-icon-size);
+}
+
+.item::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--icon-circle-size);
+  height: var(--icon-circle-size);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--bg);
+  border: 4px solid var(--border-light);
+}
+
+.item.item--banned {
+  filter: grayscale(100%);
+}
+
+.item.item--picked {
+  filter: brightness(0.5);
 }

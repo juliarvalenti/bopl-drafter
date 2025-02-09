@@ -1,5 +1,6 @@
 import React from "react";
 import items from "../items";
+import { cn } from "../utils";
 
 const ItemList: React.FC<ItemListProps> = ({ roomState }) => {
   const banned: string[] = roomState ? roomState.draftState.bannedItems : [];
@@ -11,12 +12,19 @@ const ItemList: React.FC<ItemListProps> = ({ roomState }) => {
     : [];
 
   return (
-    <div className="ability-list">
+    <div className="item-list">
       <h3>Available Items</h3>
       <ul>
         {items.map((item) => (
-          <li key={`item-${item.name}`}>
-            <img src={item.sprite} alt={item.name} />
+          <li
+            key={`item-${item.name}`}
+            className={cn("item", {
+              "item--banned": banned.includes(item.name),
+              "item--picked":
+                pickedP1.includes(item.name) || pickedP2.includes(item.name),
+            })}
+          >
+            <img src={item.sprite} alt={item.name} className="item-icon" />
             {banned.includes(item.name) && <span>(Banned)</span>}
             {pickedP1.includes(item.name) && <span>(Picked by Player1)</span>}
             {pickedP2.includes(item.name) && <span>(Picked by Player2)</span>}
