@@ -14,8 +14,8 @@ interface DraftPhase {
 // The overall draft state keeps track of banned abilities,
 // each player's picks, and the progress through the draft sequence.
 interface DraftState {
-  bannedAbilities: string[];
-  pickedAbilities: { [key in Player]: string[] };
+  bannedItems: string[];
+  pickedItems: { [key in Player]: string[] };
   currentPhaseIndex: number;
   actionsPerformedInPhase: number;
   draftSequence: DraftPhase[];
@@ -46,8 +46,8 @@ function joinRoom(roomId: string, socket: Socket, userData: any): void {
       users: {},
       playerAssignment: {},
       draftState: {
-        bannedAbilities: [],
-        pickedAbilities: { player1: [], player2: [] },
+        bannedItems: [],
+        pickedItems: { player1: [], player2: [] },
         currentPhaseIndex: 0,
         actionsPerformedInPhase: 0,
         // Define the snake draft sequence:
@@ -135,11 +135,11 @@ function processDraftAction(
 
   // Process the action.
   if (data.action === "ban") {
-    if (!draftState.bannedAbilities.includes(data.ability)) {
-      draftState.bannedAbilities.push(data.ability);
+    if (!draftState.bannedItems.includes(data.ability)) {
+      draftState.bannedItems.push(data.ability);
     }
   } else if (data.action === "pick") {
-    draftState.pickedAbilities[player].push(data.ability);
+    draftState.pickedItems[player].push(data.ability);
   }
 
   // Increment the count of actions performed in the current phase.

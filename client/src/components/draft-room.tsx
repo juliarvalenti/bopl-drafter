@@ -1,7 +1,7 @@
 // /client/src/components/draft-room.tsx
 import React, { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import AbilityList from "./ability-list";
+import ItemList from "./item-list";
 
 // Replace with your actual Heroku server URL.
 const SOCKET_SERVER_URL = "http://localhost:3000";
@@ -75,16 +75,15 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
             <h4>Draft State</h4>
             <p>Current Phase: {roomDetails.draftState.currentPhaseIndex}</p>
             <p>
-              Banned Abilities:{" "}
-              {roomDetails.draftState.bannedAbilities.join(", ")}
+              Banned Abilities: {roomDetails.draftState.bannedItems.join(", ")}
             </p>
             <p>
               Player 1 Picks:{" "}
-              {roomDetails.draftState.pickedAbilities.player1.join(", ")}
+              {roomDetails.draftState.pickedItems.player1.join(", ")}
             </p>
             <p>
               Player 2 Picks:{" "}
-              {roomDetails.draftState.pickedAbilities.player2.join(", ")}
+              {roomDetails.draftState.pickedItems.player2.join(", ")}
             </p>
           </div>
           {myPlayer && (
@@ -129,7 +128,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
         </form>
       </div>
 
-      <AbilityList
+      <ItemList
         roomState={roomDetails ? { draftState: roomDetails.draftState } : null}
       />
     </div>
@@ -138,8 +137,8 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
 
 interface DraftState {
   currentPhaseIndex: number;
-  bannedAbilities: string[];
-  pickedAbilities: {
+  bannedItems: string[];
+  pickedItems: {
     player1: string[];
     player2: string[];
   };
