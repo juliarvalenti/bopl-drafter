@@ -1,4 +1,3 @@
-// roomManager.ts
 import { Socket } from "socket.io";
 
 // Define our two possible player roles.
@@ -85,7 +84,7 @@ function joinRoom(roomId: string, socket: Socket, userData: any): void {
 }
 
 /**
- * Retrieves the current state of a room.
+ * Retrieves the raw room state.
  */
 function getRoomState(roomId: string): Room | null {
   return rooms.get(roomId) || null;
@@ -163,7 +162,6 @@ function removeUser(socket: Socket): void {
     if (room.users[socket.id]) {
       delete room.users[socket.id];
       delete room.playerAssignment[socket.id];
-      // Optionally adjust the draft state if needed.
       if (Object.keys(room.users).length === 0) {
         rooms.delete(roomId);
       }
@@ -171,9 +169,57 @@ function removeUser(socket: Socket): void {
   });
 }
 
+/**
+ * Interface for a player's details.
+ */
+interface PlayerDetails {
+  socketId: string;
+  role: Player;
+  userData: any;
+}
+
+/**
+ * Interface for detailed room information.
+ */
+interface RoomDetails {
+  id: string;
+  players: PlayerDetails[];
+  draftState: DraftState;
+  currentTurnPlayer?: Player;
+}
+
+/**
+ * Returns detailed information about a room including:
+ * - List of players (with their roles and user data)
+ * - The current allowed player (based on the draft phase)
+ */
+function getRoomDetails(roomId: string): RoomDetails | null {
+  const room = rooms.get(roomId);
+  if (!room) return null;
+  const players: PlayerDetails[] = Object.entries(room.playerAssignment).map(
+    ([socketId, role]) => ({
+      socketId,
+      role,
+      userData: room.users[socketId],
+    })
+  );
+  const currentPhase =
+    room.draftState.draftSequence[room.draftState.currentPhaseIndex];
+  const currentTurnPlayer = currentPhase
+    ? currentPhase.allowedPlayer
+    : undefined;
+  return {
+    id: room.id,
+    players,
+    draftState: room.draftState,
+    currentTurnPlayer,
+  };
+}
+
 export default {
   joinRoom,
   getRoomState,
   processDraftAction,
   removeUser,
+  getRoomDetails,
 };

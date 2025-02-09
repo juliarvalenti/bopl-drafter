@@ -1,13 +1,15 @@
+// /client/src/components/draft-room.tsx
 import React, { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import AbilityList from "./ability-list";
 
-// Replace this URL with your actual Heroku app URL.
+// Replace with your actual Heroku server URL.
 const SOCKET_SERVER_URL = "http://localhost:3000";
 
 const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [roomState, setRoomState] = useState<RoomState | null>(null);
+  const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
+  const [myPlayer, setMyPlayer] = useState<PlayerDetails | null>(null);
   const [action, setAction] = useState<string>("");
   const [actionType, setActionType] = useState<"ban" | "pick">("ban");
 
@@ -17,14 +19,19 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
     setSocket(newSocket);
 
     // Tell the server to join the specified room.
-    newSocket.emit("joinRoom", roomId, { username: "User" }); // Replace with real user data if available.
+    newSocket.emit("joinRoom", roomId, { username: "User" }); // Replace with real user data.
 
-    // Listen for room state updates.
-    newSocket.on("roomUpdate", (updatedRoom: RoomState) => {
-      setRoomState(updatedRoom);
+    // Listen for detailed room state updates.
+    newSocket.on("roomUpdate", (updatedRoom: RoomDetails) => {
+      setRoomDetails(updatedRoom);
+      // Determine my identity by comparing my socket id to the room's players.
+      const me = updatedRoom.players.find(
+        (player) => player.socketId === newSocket.id
+      );
+      setMyPlayer(me || null);
     });
 
-    // Clean up the socket when the component unmounts.
+    // Clean up when component unmounts.
     return () => {
       newSocket.disconnect();
     };
@@ -33,7 +40,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
   const handleActionSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (socket && action.trim() !== "") {
-      // Emit a draft action with roomId, type, and the ability.
+      // Emit a draft action with roomId, action type, and the ability.
       socket.emit("draftAction", {
         roomId,
         action: actionType,
@@ -48,24 +55,54 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
       <h2>Draft Room: {roomId}</h2>
       <button onClick={onLeaveRoom}>Leave Room</button>
 
-      {roomState ? (
-        <div className="room-state">
-          <h3>Current Draft State</h3>
-          <p>Current Phase: {roomState.draftState.currentPhaseIndex}</p>
-          <p>
-            Banned Abilities: {roomState.draftState.bannedAbilities.join(", ")}
-          </p>
-          <p>
-            Player 1 Picks:{" "}
-            {roomState.draftState.pickedAbilities.player1.join(", ")}
-          </p>
-          <p>
-            Player 2 Picks:{" "}
-            {roomState.draftState.pickedAbilities.player2.join(", ")}
-          </p>
+      {roomDetails ? (
+        <div className="room-details">
+          <h3>Room Details</h3>
+          <div className="players-list">
+            <h4>Players:</h4>
+            <ul>
+              {roomDetails.players.map((player) => (
+                <li key={player.socketId}>
+                  {player.userData.username || player.socketId} - {player.role}{" "}
+                  {roomDetails.currentTurnPlayer === player.role && (
+                    <strong>(Current Turn)</strong>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="draft-state">
+            <h4>Draft State</h4>
+            <p>Current Phase: {roomDetails.draftState.currentPhaseIndex}</p>
+            <p>
+              Banned Abilities:{" "}
+              {roomDetails.draftState.bannedAbilities.join(", ")}
+            </p>
+            <p>
+              Player 1 Picks:{" "}
+              {roomDetails.draftState.pickedAbilities.player1.join(", ")}
+            </p>
+            <p>
+              Player 2 Picks:{" "}
+              {roomDetails.draftState.pickedAbilities.player2.join(", ")}
+            </p>
+          </div>
+          {myPlayer && (
+            <div className="my-identity">
+              <p>
+                You are: {myPlayer.userData.username || myPlayer.socketId} -{" "}
+                {myPlayer.role}
+              </p>
+              {roomDetails.currentTurnPlayer === myPlayer.role && (
+                <p>
+                  <strong>It's your turn!</strong>
+                </p>
+              )}
+            </div>
+          )}
         </div>
       ) : (
-        <p>Loading room state...</p>
+        <p>Loading room details...</p>
       )}
 
       <div className="action-form">
@@ -92,12 +129,13 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
         </form>
       </div>
 
-      <AbilityList roomState={roomState} />
+      <AbilityList
+        roomState={roomDetails ? { draftState: roomDetails.draftState } : null}
+      />
     </div>
   );
 };
 
-// Define interfaces for the draft state as provided by the server.
 interface DraftState {
   currentPhaseIndex: number;
   bannedAbilities: string[];
@@ -107,8 +145,17 @@ interface DraftState {
   };
 }
 
-interface RoomState {
+interface PlayerDetails {
+  socketId: string;
+  role: "player1" | "player2";
+  userData: { username?: string; [key: string]: unknown };
+}
+
+interface RoomDetails {
+  id: string;
+  players: PlayerDetails[];
   draftState: DraftState;
+  currentTurnPlayer?: "player1" | "player2";
 }
 
 interface DraftRoomProps {

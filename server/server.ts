@@ -2,7 +2,7 @@
 import express, { Request, Response } from "express";
 import http from "http";
 import { Server, Socket } from "socket.io";
-import roomManager from "./room-manager"; // Ensure roomManager is typed or use any for now
+import roomManager from "./room-manager.js"; // Note: include the .js extension for ESM
 
 // Create an Express app and HTTP server
 const app = express();
@@ -24,35 +24,42 @@ app.get("/", (req: Request, res: Response) => {
   res.send("WebSocket Server is running.");
 });
 
-// Socket.IO connection handling
 io.on("connection", (socket: Socket) => {
   console.log(`New connection: ${socket.id}`);
 
-  // Handle joining a drafting room
   socket.on("joinRoom", (roomId: string, userData: any) => {
-    // Delegate room joining to our roomManager
-    roomManager.joinRoom(roomId, socket, userData);
-    socket.join(roomId);
-    console.log(`Socket ${socket.id} joined room ${roomId}`);
-
-    // Broadcast updated room state to all clients in the room
-    io.to(roomId).emit("roomUpdate", roomManager.getRoomState(roomId));
+    try {
+      roomManager.joinRoom(roomId, socket, userData);
+      socket.join(roomId);
+      console.log(`Socket ${socket.id} joined room ${roomId}`);
+      const details = roomManager.getRoomDetails(roomId);
+      console.log(`Emitting roomUpdate for room ${roomId}:`, details);
+      io.to(roomId).emit("roomUpdate", details);
+    } catch (error) {
+      console.error(`Error joining room ${roomId}:`, error);
+    }
   });
 
   socket.on(
     "draftAction",
     (data: { roomId: string; action: "ban" | "pick"; ability: string }) => {
       const updatedRoom = roomManager.processDraftAction(data, socket);
+      console.log(
+        `Processed draftAction from ${socket.id}:`,
+        data,
+        updatedRoom
+      );
       if (updatedRoom) {
-        io.to(data.roomId).emit("roomUpdate", updatedRoom);
+        io.to(data.roomId).emit(
+          "roomUpdate",
+          roomManager.getRoomDetails(data.roomId)
+        );
       }
     }
   );
 
-  // Handle disconnections
   socket.on("disconnect", () => {
     console.log(`Socket disconnected: ${socket.id}`);
-    // Remove the user from any rooms they're in
     roomManager.removeUser(socket);
   });
 });

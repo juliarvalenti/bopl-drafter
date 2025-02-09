@@ -56,7 +56,7 @@ This repository contains a real-time drafting system for Bopl Battle built with 
    npm run dev
    ```
 
-   The client application will open in your browser (typically at [http://localhost:3000](http://localhost:3000)).
+   The client application will open in your browser (typically at [http://localhost:5173](http://localhost:5173)).
    **Note:** In the client code (specifically in `draft-room.tsx`), ensure you update `SOCKET_SERVER_URL` with your actual server URL if it’s different from the default.
 
 ### Building for Production
