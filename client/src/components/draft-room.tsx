@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import AbilityList from "./ability-list";
 
 // Replace this URL with your actual Heroku app URL.
-const SOCKET_SERVER_URL = "http://your-heroku-app.herokuapp.com";
+const SOCKET_SERVER_URL = "http://localhost:3000";
 
 const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
