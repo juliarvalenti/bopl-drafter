@@ -1,8 +1,7 @@
-// /client/src/components/draft-room.tsx
 import React, { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import ItemList from "./item-list";
-import ItemSection from "./item-section";
+import DraftTimeline, { TimelineItem } from "./draft-timeline";
 
 // Use localhost for development.
 const SOCKET_SERVER_URL = "http://localhost:3000";
@@ -35,14 +34,14 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
     };
   }, [roomId]);
 
-  // Determine allowed action type from the current draft phase.
+  // Determine the allowed action type from the current draft phase.
   const allowedActionType =
     roomDetails &&
     roomDetails.draftState.draftSequence[
       roomDetails.draftState.currentPhaseIndex
     ]?.type;
 
-  // This callback is passed to ItemList; it automatically emits the action using the allowed action type.
+  // When an item is clicked, automatically use the allowed action.
   const handleItemClick = (itemName: string) => {
     if (!socket || !roomDetails || !myPlayer) return;
     if (roomDetails.currentTurnPlayer !== myPlayer.role) {
@@ -61,14 +60,14 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
 
   return (
     <div className="draft-room">
+      {/* Display the available items on one side */}
       <ItemList
         roomState={roomDetails ? { draftState: roomDetails.draftState } : null}
         onItemClick={handleItemClick}
       />
-      <div>
+      <div className="room-panel">
         <h2>Draft Room: {roomId}</h2>
         <button onClick={onLeaveRoom}>Leave Room</button>
-
         {roomDetails ? (
           <div className="room-details">
             <h3>Room Details</h3>
@@ -90,20 +89,16 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
               <h4>Draft State</h4>
               <p>Current Phase: {roomDetails.draftState.currentPhaseIndex}</p>
               <p>
-                Banned Abilities
-                <ItemSection items={roomDetails.draftState.bannedItems} />
+                Banned Abilities:{" "}
+                {roomDetails.draftState.bannedItems.join(", ")}
               </p>
               <p>
                 Player 1 Picks:{" "}
-                <ItemSection
-                  items={roomDetails.draftState.pickedItems.player1}
-                />
+                {roomDetails.draftState.pickedItems.player1.join(", ")}
               </p>
               <p>
                 Player 2 Picks:{" "}
-                <ItemSection
-                  items={roomDetails.draftState.pickedItems.player2}
-                />
+                {roomDetails.draftState.pickedItems.player2.join(", ")}
               </p>
             </div>
             {myPlayer && (
@@ -124,6 +119,8 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
                 )}
               </div>
             )}
+            {/* Render the timeline bar */}
+            <DraftTimeline actions={roomDetails.draftState.timeline} />
           </div>
         ) : (
           <p>Loading room details...</p>
@@ -145,6 +142,7 @@ interface DraftState {
     actionsAllowed: number;
     allowedPlayer: "player1" | "player2";
   }[];
+  timeline: TimelineItem[];
 }
 
 interface PlayerDetails {

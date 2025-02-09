@@ -19,6 +19,13 @@ interface DraftState {
   currentPhaseIndex: number;
   actionsPerformedInPhase: number;
   draftSequence: DraftPhase[];
+  timeline: TimelineItem[];
+}
+
+interface TimelineItem {
+  type: "ban" | "pick";
+  ability: string;
+  player: Player;
 }
 
 // A Room contains a unique ID, a list of connected users,
@@ -61,6 +68,7 @@ function joinRoom(roomId: string, socket: Socket, userData: any): void {
           { type: "pick", actionsAllowed: 2, allowedPlayer: "player2" }, // Player 2 picks two
           { type: "pick", actionsAllowed: 1, allowedPlayer: "player1" }, // Player 1 picks one
         ],
+        timeline: [],
       },
     };
     rooms.set(roomId, room);
@@ -141,6 +149,15 @@ function processDraftAction(
   } else if (data.action === "pick") {
     draftState.pickedItems[player].push(data.ability);
   }
+
+  if (!draftState.timeline) {
+    draftState.timeline = [];
+  }
+  draftState.timeline.push({
+    type: data.action,
+    ability: data.ability,
+    player,
+  });
 
   // Increment the count of actions performed in the current phase.
   draftState.actionsPerformedInPhase += 1;
