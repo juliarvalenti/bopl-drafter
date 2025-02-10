@@ -2,7 +2,13 @@
 import express, { Request, Response } from "express";
 import http from "http";
 import { Server, Socket } from "socket.io";
-import roomManager from "./room-manager.js"; // Note: include the .js extension for ESM
+import roomManager from "./room-manager.js"; // Remember the .js extension for ESM
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Get __dirname in ESM:
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Create an Express app and HTTP server
 const app = express();
@@ -19,7 +25,7 @@ const io = new Server(server, {
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Simple health check endpoint
+// Your API routes and socket connections:
 app.get("/", (req: Request, res: Response) => {
   res.send("WebSocket Server is running.");
 });
@@ -62,6 +68,15 @@ io.on("connection", (socket: Socket) => {
     console.log(`Socket disconnected: ${socket.id}`);
     roomManager.removeUser(socket);
   });
+});
+
+// ----- New: Serve the built client -----
+// Serve static files from the client dist folder.
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
+// For any other route, serve the index.html (for client-side routing)
+app.get("*", (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
 });
 
 // Start the server on the specified port

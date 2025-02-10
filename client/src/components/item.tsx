@@ -17,7 +17,6 @@ const Item: React.FC<ItemProps> = ({
     {...rest}
   >
     <img src={sprite} alt={name} className="item-icon" />
-    {isBanned && <span>(Banned)</span>}
     {pickedPlayer && <span>(Picked by {pickedPlayer})</span>}
   </li>
 );

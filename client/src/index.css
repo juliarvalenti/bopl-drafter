@@ -138,9 +138,80 @@ select {
 }
 
 .item.item--banned {
-  filter: grayscale(100%);
+  filter: sepia(100%) hue-rotate(-60deg);
 }
 
 .item.item--picked {
   filter: brightness(0.5);
+}
+
+.timeline-container {
+  position: relative;
+  padding: 2rem 0;
+}
+
+.timeline-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: #333;
+}
+
+.timeline-item {
+  position: relative;
+  width: 45%;
+  padding: 0.5rem;
+}
+
+.timeline-item--left {
+  left: 0;
+  text-align: right;
+}
+
+.timeline-item--right {
+  left: 55%;
+  text-align: left;
+}
+
+.timeline-content {
+  display: flex;
+  align-items: center;
+}
+
+.timeline-item--left .timeline-arrow {
+  /* Arrow pointing left */
+  border: solid #333;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 5px;
+  transform: rotate(135deg);
+  margin-right: 0.5rem;
+}
+
+.timeline-item--right .timeline-arrow {
+  /* Arrow pointing right */
+  border: solid #333;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 5px;
+  transform: rotate(-45deg);
+  margin-left: 0.5rem;
+}
+
+.timeline-box {
+  display: inline-flex;
+  font-size: 0.5em;
+  white-space: nowrap;
+  align-items: center;
+  background: #eee;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.timeline-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 0.5rem;
 }

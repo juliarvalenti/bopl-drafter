@@ -85,7 +85,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
                 ))}
               </ul>
             </div>
-            <div className="draft-state">
+            {/* <div className="draft-state">
               <h4>Draft State</h4>
               <p>Current Phase: {roomDetails.draftState.currentPhaseIndex}</p>
               <p>
@@ -100,7 +100,7 @@ const DraftRoom: React.FC<DraftRoomProps> = ({ roomId, onLeaveRoom }) => {
                 Player 2 Picks:{" "}
                 {roomDetails.draftState.pickedItems.player2.join(", ")}
               </p>
-            </div>
+            </div> */}
             {myPlayer && (
               <div className="my-identity">
                 <p>
