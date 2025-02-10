@@ -25,11 +25,6 @@ const io = new Server(server, {
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Your API routes and socket connections:
-app.get("/", (req: Request, res: Response) => {
-  res.send("WebSocket Server is running.");
-});
-
 io.on("connection", (socket: Socket) => {
   console.log(`New connection: ${socket.id}`);
 
